@@ -53,7 +53,8 @@ RegExp.escape= function(s) {
     defaults: {
       separator:',',
       delimiter:'"',
-      headers:true
+      headers:true,
+      forceDelimiter:false
     },
 
     hooks: {
@@ -830,6 +831,7 @@ RegExp.escape= function(s) {
      * @param {Object} [options] An object containing user-defined options.
      * @param {Character} [separator] An override for the separator character. Defaults to a comma(,).
      * @param {Character} [delimiter] An override for the delimiter character. Defaults to a double-quote(").
+     * @param {Boolean} [forceDelimiter] Force values to be quoted. Defaults to false.
      *
      * This method generates a CSV file from an array of arrays (representing entries).
      */
@@ -839,17 +841,20 @@ RegExp.escape= function(s) {
       config.callback = ((callback !== undefined && typeof(callback) === 'function') ? callback : false);
       config.separator = 'separator' in options ? options.separator : $.csv.defaults.separator;
       config.delimiter = 'delimiter' in options ? options.delimiter : $.csv.defaults.delimiter;
+      config.forceDelimiter = 'forceDelimiter' in options ? options.forceDelimiter : $.csv.defaults.forceDelimiter;
 
       var output = '',
           line,
           lineValues,
+          strValue,
           i, j;
 
       for (i = 0; i < arrays.length; i++) {
+        if (i !== 0) { output += '\n'; }
         line = arrays[i];
         lineValues = [];
         for (j = 0; j < line.length; j++) {
-          var strValue = (line[j] === undefined || line[j] === null)
+          strValue = (line[j] === undefined || line[j] === null)
                        ? ''
                        : line[j].toString();
           if (strValue.indexOf(config.delimiter) > -1) {
@@ -860,12 +865,12 @@ RegExp.escape= function(s) {
           escMatcher = escMatcher.replace('S', config.separator);
           escMatcher = escMatcher.replace('D', config.delimiter);
 
-          if (strValue.search(escMatcher) > -1) {
+          if (config.forceDelimiter || strValue.search(escMatcher) > -1) {
             strValue = config.delimiter + strValue + config.delimiter;
           }
           lineValues.push(strValue);
         }
-        output += lineValues.join(config.separator) + '\r\n';
+        output += lineValues.join(config.separator);
       }
 
       // push the value to a callback if one is defined
@@ -884,6 +889,7 @@ RegExp.escape= function(s) {
      * @param {Object} [options] An object containing user-defined options.
      * @param {Character} [separator] An override for the separator character. Defaults to a comma(,).
      * @param {Character} [delimiter] An override for the delimiter character. Defaults to a double-quote(").
+     * @param {Boolean} [forceDelimiter] Force values to be quoted. Defaults to false.
      * @param {Character} [sortOrder] Sort order of columns (named after
      *   object properties). Use 'alpha' for alphabetic. Default is 'declare',
      *   which means, that properties will _probably_ appear in order they were
